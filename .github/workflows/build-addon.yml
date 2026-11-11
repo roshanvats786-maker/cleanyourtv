@@ -1,0 +1,27 @@
+name: Build add-on APK
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: Add-on folder name, for example weather
+        required: true
+        default: weather
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+      - run: sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - run: chmod +x gradlew && ./gradlew assembleRelease
+        working-directory: addons/${{ inputs.addon }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: addon-${{ inputs.addon }}
+          path: addons/${{ inputs.addon }}/app/build/outputs/apk/release/*.apk
